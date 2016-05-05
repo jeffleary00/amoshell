@@ -27,6 +27,13 @@ __version__ = '.'.join(__version_info__)
 # global variables
 amosbin = __find_amos()
 amosbatchbin = __find_amosbatch()
+if not amosbin:
+	sys.stderr.write("cannot find amos or moshell\n")
+	sys.exit(1)
+	
+if not amosbatchbin:
+sys.stderr.write("cannot find amosbatch or mobatch\n")
+	sys.exit(1)
 
 
 """
