@@ -1,9 +1,9 @@
-# amos
+# AMOS
 python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 
-# examples
+# EXAMPLES
 	
-AMOS/MOSHELL
+amos/moshell
 ------------
 	import amos
 	rval, results = amos.amos('RBS001', 'lt all; alt')
@@ -13,7 +13,7 @@ AMOS/MOSHELL
 	rval, results = amos.amos('ERBS02', 'get security', ip_database=/home/user/ip.db, corba_class=5)
 
 
-AMOSBATCH/MOBATCH
+amosbatch/mobatch
 -----------------
 	import amos
 	results = amos.amosbatch(('RBS001','RBS002','RBS003'), 'lt all; alt')
@@ -24,7 +24,7 @@ AMOSBATCH/MOBATCH
 		else:
 			print node + ' amos error: ' + payload
 			
-#api
+#API
 
 amos(node-name, command-string, [**kwargs])
 -----------------
