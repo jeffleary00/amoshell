@@ -9,8 +9,8 @@ python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 	if not rval:
 		print results
 		
-	rval, results = amos.amos('ERBS02', 'lt all; get security -s node',
-								ip_database=/home/user/ip.db, corba_class=5)
+	rval, results = amos.amos('ERBS02', 'get security', ip_database=/home/user/ip.db, corba_class=5)
+
 
 	AMOSBATCH/MOBATCH
 	-----------------
