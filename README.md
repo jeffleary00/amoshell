@@ -2,8 +2,9 @@
 python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 
 # examples
-	AMOS/MOSHELL
-	------------
+	
+AMOS/MOSHELL
+------------
 	import amos
 	rval, results = amos.amos('RBS001', 'lt all; alt')
 	if not rval:
@@ -12,8 +13,8 @@ python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 	rval, results = amos.amos('ERBS02', 'get security', ip_database=/home/user/ip.db, corba_class=5)
 
 
-	AMOSBATCH/MOBATCH
-	-----------------
+AMOSBATCH/MOBATCH
+-----------------
 	import amos
 	results = amos.amosbatch(('RBS001','RBS002','RBS003'), 'lt all; alt')
 	for r in results:
@@ -25,19 +26,19 @@ python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 			
 #api
 
-	#amos(node-name, command-string, [**kwargs])
-  	
-  	kwargs are any variable_name=value options that can be passed to amos.
-  	See Ericsson Advanced Moshell Scripting Guide for more details.
+amos(node-name, command-string, [**kwargs])
+-----------------
+kwargs are any variable_name=value options that can be passed to amos.
+See Ericsson Advanced Moshell Scripting Guide for more details.
   
-  	returns: a tuple (result(0 ok|1 fail), stdout text)
+returns: a tuple (result(0 ok|1 fail), stdout text)
   
   
-	#amosbatch((list-or-tuple of node names), command-string, [**kwargs])
-  
-  	returns: list of result objects (node-name, return-code(0|1), payload)
-  	in the case of a success, the payload contains the path to the logfile
-  	containing the output. otherwise, payload will probably contain the error
-  	message.
+amosbatch((list-or-tuple of node names), command-string, [**kwargs])
+-----------------  
+returns: list of result objects (node-name, return-code(0|1), payload)
+in the case of a success, the payload contains the path to the logfile
+containing the output. otherwise, payload will probably contain the error
+message.
   
   
