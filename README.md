@@ -25,15 +25,19 @@ python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 			
 #api
 
-amos()
-  params: node-name, command-string, [**kwargs]
-  returns: return-code(0 ok|1 fail), returned-text
+	#amos(node-name, command-string, [**kwargs])
+  	
+  	kwargs are any variable_name=value options that can be passed to amos.
+  	See Ericsson Advanced Moshell Scripting Guide for more details.
   
-amosbatch():
-  params: (list of node names), command-string, [**kwargs]
-  returns: list of result objects (node-name, return-code(0|1), payload)
-  in the case of a success, the payload contains the path to the logfile
-  containing the output. otherwise, payload will probably contain the error
-  message.
+  	returns: a tuple (result(0 ok|1 fail), stdout text)
+  
+  
+	#amosbatch((list-or-tuple of node names), command-string, [**kwargs])
+  
+  	returns: list of result objects (node-name, return-code(0|1), payload)
+  	in the case of a success, the payload contains the path to the logfile
+  	containing the output. otherwise, payload will probably contain the error
+  	message.
   
   
