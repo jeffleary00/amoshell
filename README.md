@@ -22,3 +22,18 @@ python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 			print node + ' results found in file ' + payload
 		else:
 			print node + ' amos error: ' + payload
+			
+#api
+
+amos()
+  params: node-name, command-string, [**kwargs]
+  returns: return-code(0 ok|1 fail), returned-text
+  
+amosbatch():
+  params: (list of node names), command-string, [**kwargs]
+  returns: list of result objects (node-name, return-code(0|1), payload)
+  in the case of a success, the payload contains the path to the logfile
+  containing the output. otherwise, payload will probably contain the error
+  message.
+  
+  
