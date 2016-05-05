@@ -380,12 +380,13 @@ returns:
 def __find_amos:
 	target = None
 	possibles = ('amos', 'moshell')
-	for t in possibles:
-	
+	for p in possibles:
+		target = __which(p)
 		if target:
 			return target
 
 	return target
+
 	
 """
 __find_amosbatch()
@@ -404,11 +405,41 @@ returns:
 def __find_amosbatch():
 	target = None
 	possibles = ('amosbatch', 'mobatch')
-	for t in possibles:
-	
+	for p in possibles:
+		target = __which(p)
 		if target:
 			return target
 
 	return target
-	
 
+
+"""
+__which()
+=============================
+*PRIVATE*
+=============================
+mimic the function of Unix which command.
+
+params:
+	executable name
+
+returns:
+	full path to the executable
+	None on failure
+"""	
+def __which(program):
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
