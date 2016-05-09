@@ -423,9 +423,9 @@ class Amos:
     def __amosbatch_runner(self, sitefile, cmdfile, opts=None):
         v = None;
         logdir = None
-        script = [mobatchbin]
+        script = [self.mobatchbin]
         script.append('-p')
-        script.append(str(parallel))
+        script.append(str(self.parallel))
 
         if opts:
             atoms = []
