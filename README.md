@@ -8,8 +8,8 @@ Unix-like systems with Ericsson amos/moshell installed. NOT for Windows
 
 # SYNOPSIS
 	
-amos/moshell
-------------
+moshell
+---------
 	from amoshell import Amos
 	mo = Amos()
 	rval, results = mo.moshell('RBS001', 'lt all; alt')
@@ -17,8 +17,8 @@ amos/moshell
 		print results
 		
 
-amosbatch/mobatch
------------------
+mobatch
+---------
 	from amoshell import Amos
 	mo = Amos()
 	results = mo.mobatch(('RBS001','RBS002','RBS003'), 'lt all; alt')
@@ -31,7 +31,7 @@ amosbatch/mobatch
 			
 #API
 
-amos(node-name, command-string, [**kwargs])
+moshell(node-name, command-string, [**kwargs])
 -----------------
 - node-name: can be either ip-address, or node name.
 - command-string: a string of semicolon separated amos commands. optionally, you can pass a string containing the path to an existing command-file.
@@ -40,7 +40,7 @@ amos(node-name, command-string, [**kwargs])
 returns: a tuple (return-code(0 ok|1 fail), stdout text)
   
   
-amosbatch((list of node names), command-string, [**kwargs])
+mobatch((list of node names), command-string, [**kwargs])
 -----------------  
 - node-names: should be a list or tuple of valid node names. optionally, you can pass in a list with a single element containing the path to an existing site-file.
 - command-string: a string of semicolon separated amos commands. optionally, you can pass a string containing the path to an existing command-file.
