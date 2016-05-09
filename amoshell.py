@@ -102,13 +102,13 @@ class Amos:
         
         if not self.moshellbin:
             try:
-                self.moshellbin = self.amos_location(self.bin_path)
+                self.moshellbin = self.__amos_location(self.bin_path)
             except:
                 raise RuntimeError('amos or moshell binary not found')
             
         if not self.mobatchbin:
             try:
-                self.mobatchbin = self.amosbatch_location(self.bin_path)
+                self.mobatchbin = self.__amosbatch_location(self.bin_path)
             except:
                 raise RuntimeError('amosbatch or mobatch binary not found')
             
@@ -133,9 +133,9 @@ class Amos:
     mobatch()
     send amosbatch(mobatch) commands to nodes, and get result logs.
     
-    this can take a very, very long time to complete, depending on number of
-    nodes and commands to be run. mobatch commands against thousands of nodes
-    may take 4-8 hours(or more) to complete!!
+    WARNING! mobatch commands can take a very, very long time to complete, 
+    depending on number of nodes and commands to be run. ommands run against 
+    thousands of nodes may take 6-10 hours(or more) to complete!!
     
     params:
         node list (or path to existing sitefile)
@@ -152,20 +152,14 @@ class Amos:
         cmdfile = None
         
         if len(nodes) == 1:
-            # only one node? seems odd. possibly it is a sitefile
+            # only one node? seems odd. possibly it is a sitefile?
             if os.path.isfile(nodes[0]):
                 sitefile = nodes[0]         
         
         # write the sitefile if required    
         if not sitefile:    
             sitefile = '/tmp/pymobatch.' + str(os.getpid()) + '.sitefile'
-        
-            try:
-                fh = open(sitefile, 'w')
-            except IOError:
-                sys.stderr.write("failed to open temp sitefile for writing\n")
-                return []
-
+            fh = open(sitefile, 'w')
             for n in nodes:
                 fh.write(n + "\n")
 
@@ -176,13 +170,9 @@ class Amos:
             cmdfile = cmd
         else:
             cmdfile = '/tmp/pymobatch.' + str(os.getpid()) + '.mos'
-            try:
-                fh = open(cmdfile, 'w')
-            except IOError:
-                sys.stderr.write("failed to open temp command file for writing\n")
-                return []
-
+            fh = open(cmdfile, 'w')
             atoms = cmd.split(';')
+            
             for a in atoms:
                 fh.write(a.strip() + "\n")
     
@@ -197,7 +187,8 @@ class Amos:
     
         
     """
-    amos_location()
+    __amos_location()
+    PRIVATE
     get full path to either the amos or moshell binary
     
     params:
@@ -205,7 +196,7 @@ class Amos:
     returns:
         full path to binary | None
     """
-    def amos_location(self, path):
+    def __amos_location(self, path):
         loc = self.__find_possibles(('amos','moshell'), path)
         if not loc:
             raise
@@ -214,7 +205,8 @@ class Amos:
     
 
     """
-    amosbatch_location()
+    __amosbatch_location()
+    PRIVATE
     get full path to either the amosbatch or mobatch binary
     
     params:
@@ -222,7 +214,7 @@ class Amos:
     returns:
         full path to binary | None
     """
-    def amosbatch_location(self, path):
+    def __amosbatch_location(self, path):
         loc = self.__find_possibles(('amosbatch','mobatch'), path)
         if not loc:
             raise
@@ -244,7 +236,7 @@ class Amos:
     def __find_possibles(self, possibles, path):
 
         if not possibles or len(possibles) < 1:
-            pass
+            return None
             
         if not path:
             for p in possibles:
@@ -469,7 +461,7 @@ class Amos:
                 return self.__amosbatch_result_parser(match.group(1))
 
 
-        sys.stderr.write("could not find amosbatch result path\n")
+        raise RuntimeError('could not find amosbatch result path from results')
         return []
 
 
@@ -492,8 +484,7 @@ class Amos:
         rlog = glob.glob(path + '/*result.txt')[0]
 
         if not rlog:
-            sys.stderr.write('amosbatch results text file not found in ' + path)
-            return []
+            raise RuntimeError('amosbatch results file not found in ' + path)
 
         nocontact = self.__amosbatch_nocontact_nodes(rlog)
 
@@ -510,7 +501,7 @@ class Amos:
                 if node in nocontact:
                     continue
 
-                results.append( (node, 0, log) )
+                results.append((node, 0, log))
 
         return results
 
@@ -541,8 +532,7 @@ class Amos:
         try:
             fh = open(fname, 'r+')
         except IOError:
-            sys.stderr.write("failed to open " + fname + "\n")
-            return []
+            raise
 
         for line in fh.readlines():
             match = re.match(r'^\s*no contact\s+\S+\s+(\S+)\s*$', line)

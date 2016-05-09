@@ -4,7 +4,7 @@ Python module for interfacing with Ericsson moshell/amos/mobatch/amosbatch CLI.
 
 # PLATFORM
 
-Unix-like systems only. Does not work on WindowsOS
+Unix-like systems with Ericsson amos/moshell installed. NOT for Windows
 
 # SYNOPSIS
 	
