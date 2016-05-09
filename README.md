@@ -21,7 +21,7 @@ amosbatch/mobatch
 -----------------
 	from amoshell import Amos
 	mo = Amos()
-	results = amos.amosbatch(('RBS001','RBS002','RBS003'), 'lt all; alt')
+	results = mo.mobatch(('RBS001','RBS002','RBS003'), 'lt all; alt')
 	for r in results:
 		node, rval, payload = r
 		if not rval:
