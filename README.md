@@ -57,14 +57,14 @@ If node was successful, payload will contain the path to the amos log containing
   
 #INITITALIZATION
 
+    from amoshell import Amos
+    mo = Amos(bin_path='/path/to/binaries', parallel=5)
+    
 Attributes that can be set when instantiating the Amos object.
 - moshellbin: full path to moshell or amos, if not found in normal location
 - mobatchbin: see above.
 - bin_path: path to search for amos binaries, if not in typical locations.
 - parallel: used to set number of concurrent processes for mobatch. See Ericsson documentation for warnings! It is not recommended to set this value above 10 (the default value).
-
-    from amoshell import Amos
-    mo = Amos(bin_path='/path/to/binaries', parallel=5)
 
 
 #LIMITATIONS, BUGS, TO-DO
