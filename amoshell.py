@@ -391,7 +391,7 @@ class Amos:
             script.append(logdir)
             
         script.append(node)
-        script.append("'" + cmd + "'")
+        script.append(cmd)
         child = subprocess.Popen(script,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE )
