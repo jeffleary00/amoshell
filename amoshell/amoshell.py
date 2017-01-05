@@ -1,82 +1,3 @@
-"""
--------------------------------------------------------------------------------
-AMOSHELL:
-
-    A Python OO interface to the Ericsson moshell/amos CLI.
-
-
-API:
-
-    moshell(node, command, **opts)
-    mobatch(node-list, command, **opts)
-    
-EXAMPLES:
-
-    ** moshell usage **
-    *******************
-    
-    from amoshell import Amos
-    mo = Amos()
-    rval, results = mo.moshell('RBS003', 'lt all; alt')
-    if rval:
-        print 'error: ' + results
-    else:
-        print results
-
-
-    ** mobatch usage **
-    *******************
-    
-    from amoshell import Amos
-    mo = Amos(parallel=5, log_dir=/var/tmp/mylogs)
-    results = mo.mobatch(['ERB001', 'ERBS002'], 'lt all; get security', 
-                                                    ip_database=/tmp/ipdb.dat,
-                                                    corba_class=5 )
-    for r in results:
-        node, rval, logfile = r
-        if not rval:
-            print node + " results found in " + logfile                                             
-
-    
-AUTHOR:
-
-    Jeff Leary
-    jeffleary00@gmail.com
-
-
-LICENSE:
-
-Copyright (c) 2016, Jeff Leary
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-* Neither the name of amos nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
--------------------------------------------------------------------------------
-"""
-
 import os
 import sys
 import re
@@ -84,11 +5,13 @@ import glob
 import copy
 import subprocess
 
-
-__version_info__ = ('1','0','2')
-__version__ = '.'.join(__version_info__)
-
-
+"""
+    args: 
+    - parallel: max number of parallel sessions mobatch will use. default=10.
+    - bin_path: path, if moshell/mobatch binaries are installed in a
+                non-standard location.
+                
+"""
 class Amos:
     
     def __init__(self, **kwargs):
@@ -97,32 +20,36 @@ class Amos:
         self.mobatchbin = None
         self.parallel = 10
     
-        for k,v in kwargs.items():
+        allowed = ('parallel', 'bin_path')
+        for k, v in kwargs.items():
+            if not k in allowed:
+                raise KeyError("Invalid option-key: %s" % k)
+                
             setattr(self, k, v)
         
         if not self.moshellbin:
             try:
                 self.moshellbin = self.__amos_location(self.bin_path)
             except:
-                raise RuntimeError('amos or moshell binary not found')
+                raise RuntimeError('amos or moshell program not found')
             
         if not self.mobatchbin:
             try:
                 self.mobatchbin = self.__amosbatch_location(self.bin_path)
             except:
-                raise RuntimeError('amosbatch or mobatch binary not found')
+                raise RuntimeError('amosbatch or mobatch program not found')
             
     
     """
     moshell()
-    send amos command to node, and get stdout results
+    send amos command to node, and get results
     
     params:
         node name (or ip address)
         command string
         optional keyword-args (valid amos optional variables only)
     returns:
-        tuple (return-code[0 ok|1 fail], stdout text)
+        tuple (return-code[0 ok|1 fail], stdout text, stderr text)
     """                 
     def moshell(self, node, cmd, **kwargs):
         opts = self.__parse_kwargs(kwargs)
@@ -134,8 +61,9 @@ class Amos:
     send amosbatch(mobatch) commands to nodes, and get result logs.
     
     WARNING! mobatch commands can take a very, very long time to complete, 
-    depending on number of nodes and commands to be run. ommands run against 
-    thousands of nodes may take 6-10 hours(or more) to complete!!
+    depending on number of nodes and commands to be run. commands run against 
+    thousands of nodes may take 6-10 hours(or more) to complete!
+    Also, using over 30 parallel sessions is not recommended.
     
     params:
         node list (or path to existing sitefile)
@@ -143,13 +71,15 @@ class Amos:
         optional keyword-args (valid amos optional variables only)
         
     returns:
-        list-of-tuples. Each result tuple contains the following:
-         (node-name, return-code, path-to-logfile)
+        a list-of-tuples. Each result tuple contains the following:
+         (node-name, exit-code, path-to-logfile)
     """
     def mobatch(self, nodes, cmd, **kwargs):
         opts = self.__parse_kwargs(kwargs)
         sitefile = None
         cmdfile = None
+        rmv_sitefile = False
+        rmv_cmdfile = False
         
         if len(nodes) == 1:
             # only one node? seems odd. possibly it is a sitefile?
@@ -157,7 +87,8 @@ class Amos:
                 sitefile = nodes[0]         
         
         # write the sitefile if required    
-        if not sitefile:    
+        if not sitefile:
+            rmv_sitefile = True  
             sitefile = '/tmp/pymobatch.' + str(os.getpid()) + '.sitefile'
             fh = open(sitefile, 'w')
             for n in nodes:
@@ -166,9 +97,10 @@ class Amos:
             fh.close()
 
         # write amos commands to a file
-        if os.path.isfile(cmd):
+        if len(cmd) == 1 and os.path.isfile(cmd):
             cmdfile = cmd
         else:
+            rmv_cmdfile = True
             cmdfile = '/tmp/pymobatch.' + str(os.getpid()) + '.mos'
             fh = open(cmdfile, 'w')
             atoms = cmd.split(';')
@@ -178,10 +110,13 @@ class Amos:
     
             fh.close()
 
-    
         results = self.__amosbatch_runner(sitefile, cmdfile, opts)
-        os.unlink(sitefile)
-        os.unlink(cmdfile)
+        
+        if rmv_sitefile:
+            os.unlink(sitefile)
+        
+        if rmv_cmdfile:
+            os.unlink(cmdfile)
     
         return results
     
@@ -322,7 +257,7 @@ class Amos:
             'keepLmList',
             'lt_confirmation',
             'loginfo_print',
-            'logdir',   # special case. see ericsson documentation
+            'logdir',   # custom option, not E/// supported. see documentation
             'muteFactor',
             'nm_credential',
             'node_login',
@@ -346,11 +281,7 @@ class Amos:
             
         for k, v in opts.items():
             if k not in valid:
-                sys.stderr.write(k + " not a valid option\n")
-                try:
-                    del opts[k]
-                except KeyError:
-                    pass
+                raise KeyError("Invalid option-key: %s" % k)
 
         return opts
 
@@ -366,7 +297,7 @@ class Amos:
         3. an option dict (optional)
     returns:
         A tuple. two elements.
-        (return-code(0=ok, 1=fail), text-results)
+        (return-code(0=ok, 1=fail), stdout, stderr)
     """
     def __amos_runner(self, node, cmd, opts=None):
         v = None;
@@ -396,10 +327,7 @@ class Amos:
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE )
         output, errors = child.communicate()
-        if child.returncode or errors:
-            return (1, errors)
-
-        return (0, output)
+        return (child.returncode, output, errors)
 
 
     """
@@ -450,7 +378,7 @@ class Amos:
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE )
         output, errors = child.communicate()
-        if errors:
+        if child.returncode:
             sys.stderr.write(errors)
             return []
 
@@ -462,7 +390,6 @@ class Amos:
 
 
         raise RuntimeError('could not find amosbatch result path from results')
-        return []
 
 
     """
@@ -529,11 +456,7 @@ class Amos:
         no contact    0m15s   PSLEeNB01
         """
 
-        try:
-            fh = open(fname, 'r+')
-        except IOError:
-            raise
-
+        fh = open(fname, 'r+')
         for line in fh.readlines():
             match = re.match(r'^\s*no contact\s+\S+\s+(\S+)\s*$', line)
             if match:
