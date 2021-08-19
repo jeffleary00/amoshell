@@ -8,8 +8,8 @@ if os.path.exists('README.rst'):
     
 setup(
   name = 'amoshell',
-  packages = ['amoshell'], 
-  version = '0.1',
+  packages = ['amoshell'],
+  version = '0.2',
   description = "Python interface to Ericsson's amos/moshell programs",
   long_description=contents,
   author = 'Jeff Leary',
